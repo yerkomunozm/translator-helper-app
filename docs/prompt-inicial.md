@@ -1,0 +1,2 @@
+Esta es una aplicación de apoyo a traductores profesionales. El primer módulo debe ser capaz de leer archivos docx, con instrucciones y guías de estilo de traducción (editables) y luego, a través del análisis de IA, poder crear un listado de instrucciones estilo prompt, para pasarle a otra IA para que haga traducciones más personalizadas.
+Para esto genera en [specs](docs/specs) los archivos de specs correspondientes, un plan de implementación en [docs](docs) y espera mi validación. Aún no codifiques nada.
