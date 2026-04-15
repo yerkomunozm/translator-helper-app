@@ -1,22 +1,21 @@
-# Módulo 01: Generador de instrucciones de traducción desde DOCX
+# Módulo 01: inicio del flujo de traducción desde PDF
 
 ## Objetivo
 
-Definir el primer módulo de la aplicación de apoyo a traductores profesionales. Este módulo debe permitir cargar un archivo `.docx` con instrucciones de cliente, guías de estilo, glosarios y criterios editoriales, analizar su contenido con IA y generar un listado de instrucciones estilo prompt para reutilizarse en otro flujo de traducción asistida por IA.
+Definir el primer módulo de la aplicación de apoyo a traductores profesionales. Este módulo debe permitir cargar un archivo `.pdf` con instrucciones de cliente, guías de estilo, glosarios o criterios editoriales para iniciar el flujo desde el documento entregado por el cliente.
 
 ## Problema a resolver
 
-Los traductores profesionales suelen recibir lineamientos en documentos Word desestructurados o semi-estructurados. Esos lineamientos contienen decisiones críticas de tono, terminología, exclusiones, audiencia y formato, pero convertirlos manualmente en prompts reutilizables consume tiempo y genera inconsistencias.
+Los traductores profesionales suelen recibir lineamientos en archivos compartidos por clientes antes de cualquier procesamiento posterior. Si la aplicación no puede iniciar correctamente desde ese documento fuente, el flujo se vuelve frágil, ambiguo y dependiente de pasos manuales innecesarios.
 
 ## Resultado esperado
 
 El usuario puede:
 
-1. Subir un `.docx` con lineamientos de traducción.
-2. Revisar y editar el contenido extraído.
-3. Ejecutar un análisis asistido por IA sobre ese contenido.
-4. Obtener un listado de instrucciones claras, accionables y reutilizables.
-5. Copiar, exportar o reutilizar ese listado como prompt base para otra IA traductora.
+1. Subir un archivo `.pdf` con instrucciones de traducción.
+2. Recibir validación inmediata del archivo seleccionado.
+3. Ver el estado de carga o procesamiento inicial.
+4. Confirmar visualmente que el archivo quedó listo para continuar.
 
 ## Usuarios objetivo
 
@@ -29,85 +28,77 @@ El usuario puede:
 
 Incluye:
 
-- Carga de archivos `.docx`.
-- Extracción de texto legible del documento.
-- Edición manual del contenido extraído.
-- Análisis con IA del contenido textual.
-- Generación de instrucciones estructuradas estilo prompt.
-- Edición manual del resultado generado.
-- Copia/exportación del resultado.
+- Carga de archivos `.pdf`.
+- Validación de existencia, formato, MIME type cuando aplique, tamaño y archivo no vacío.
+- Estados visibles de carga o procesamiento inicial.
+- Confirmación visual del archivo válido.
+- Conservación del archivo válido en el estado de la pantalla para el siguiente paso.
 
 No incluye aún:
 
-- Traducción automática del contenido fuente.
-- Memorias de traducción.
-- Integraciones CAT tools.
-- Versionado avanzado de guías.
-- Comparación entre múltiples guías.
-- Ingesta de PDF, XLSX o TXT.
+- Extracción de contenido del PDF.
+- Análisis con IA.
+- Edición de contenido extraído.
+- Exportación de resultados.
+- Soporte para otros formatos distintos de PDF.
 
 ## Casos de uso principales
 
-### CU-01: Convertir una guía de estilo a prompt reutilizable
+### CU-01: Iniciar el flujo desde un PDF del cliente
 
-El traductor carga un `.docx` recibido del cliente y obtiene una lista de instrucciones depurada para usar en otra IA.
+El traductor carga un `.pdf` recibido del cliente y deja el archivo listo para el siguiente paso del flujo.
 
-### CU-02: Corregir extracción antes del análisis
+### CU-02: Detectar errores antes de continuar
 
-El traductor revisa el texto extraído, corrige secciones erróneas o elimina ruido antes de ejecutar el análisis.
-
-### CU-03: Ajustar la salida final
-
-El traductor edita el prompt sugerido para adaptarlo a un proyecto específico.
+El traductor recibe mensajes claros cuando el archivo no es válido y evita avanzar con un documento incorrecto o incompleto.
 
 ## Requisitos de producto
 
 ### Requisitos funcionales
 
-- RF-01: El sistema debe aceptar archivos `.docx`.
-- RF-02: El sistema debe extraer el contenido textual principal del archivo.
-- RF-03: El sistema debe permitir editar el contenido extraído antes del análisis.
-- RF-04: El sistema debe analizar el contenido con IA para identificar instrucciones relevantes para traducción.
-- RF-05: El sistema debe generar una salida estructurada en formato lista de instrucciones estilo prompt.
-- RF-06: El sistema debe permitir editar la salida generada.
-- RF-07: El sistema debe permitir copiar la salida al portapapeles.
-- RF-08: El sistema debería permitir exportar la salida en texto o markdown en una iteración posterior cercana.
+- RF-01: El sistema debe aceptar archivos `.pdf`.
+- RF-02: El sistema debe rechazar formatos no soportados con mensaje claro.
+- RF-03: El sistema debe validar que el archivo no esté vacío.
+- RF-04: El sistema debe validar el tamaño máximo permitido.
+- RF-05: El sistema debe validar el MIME type cuando el navegador entregue esa información.
+- RF-06: El sistema debe mostrar estado de carga o procesamiento inicial.
+- RF-07: El sistema debe conservar el archivo válido para el siguiente paso del flujo.
+- RF-08: El sistema no debe permitir continuar sin un archivo válido.
 
 ### Requisitos no funcionales
 
 - RNF-01: La interfaz debe priorizar claridad y revisión humana.
-- RNF-02: El procesamiento debe ser observable para el usuario: carga, extracción, análisis y resultado.
-- RNF-03: La salida debe ser consistente y fácil de reutilizar entre proyectos.
-- RNF-04: El sistema debe estar preparado para soportar otros tipos de documentos en módulos futuros.
-- RNF-05: El contenido del documento no debe enviarse a análisis sin acción explícita del usuario.
+- RNF-02: El procesamiento inicial debe ser observable para el usuario.
+- RNF-03: El flujo debe ser usable con teclado.
+- RNF-04: Los errores deben ser visibles y comprensibles.
+- RNF-05: El módulo debe quedar preparado para soportar procesamiento posterior del archivo sin obligar a una nueva selección.
 
 ## Entradas y salidas
 
 ### Entrada principal
 
-- Archivo `.docx` con lineamientos lingüísticos.
+- Archivo `.pdf` con lineamientos lingüísticos o instrucciones de traducción.
 
 ### Salidas esperadas
 
-- Texto extraído editable.
-- Listado de instrucciones estilo prompt.
-- Versión final editable y copiable/exportable.
+- Validación del archivo seleccionado.
+- Estado visual del flujo de carga inicial.
+- Referencia al archivo válido disponible para el siguiente paso.
 
 ## Criterios de éxito
 
-- El usuario puede transformar una guía `.docx` en un prompt usable sin rehacer manualmente el documento.
-- La salida generada reduce ambigüedad y ruido respecto al documento original.
-- El usuario mantiene control editorial antes y después del análisis con IA.
+- El usuario puede iniciar el flujo desde un archivo `.pdf`.
+- La aplicación impide avanzar cuando el archivo no cumple las validaciones.
+- El usuario comprende el estado actual del proceso y los errores cuando ocurren.
 
 ## Riesgos de producto
 
-- Extracción incompleta de documentos con formato complejo.
-- Instrucciones redundantes o contradictorias en el documento fuente.
-- Sobreinterpretación por parte de la IA.
-- Pérdida de contexto si el documento mezcla guía de estilo con información operativa no lingüística.
+- Usuarios que intenten cargar formatos no soportados.
+- Archivos vacíos o incorrectos con apariencia de PDF.
+- Confusión si la aplicación sugiere que ya interpreta el contenido cuando aún no lo hace.
 
 ## Supuestos
 
-- La primera versión trabajará principalmente con `.docx` textuales y no con documentos fuertemente diagramados.
-- El valor principal del módulo está en sintetizar instrucciones, no en preservar el layout original.
-- La revisión humana seguirá siendo obligatoria antes de reutilizar el prompt final.
+- Esta primera historia valida y retiene el archivo, pero no interpreta su contenido.
+- El procesamiento real del PDF pertenece a una historia posterior.
+- El valor principal de esta entrega es asegurar un inicio de flujo claro y confiable.

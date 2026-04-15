@@ -4,22 +4,19 @@
 
 Diseñar un módulo desacoplado que permita:
 
-- Ingerir archivos `.docx`.
-- Extraer contenido textual editable.
-- Enviar el texto curado a un motor de análisis IA.
-- Recibir una estructura de instrucciones reutilizable.
-- Mantener trazabilidad entre documento original, texto editado y resultado generado.
+- Ingerir archivos `.pdf`.
+- Validar el archivo en frontend antes de continuar.
+- Mantener trazabilidad entre el archivo original y el estado del flujo.
+- Dejar preparado el contrato para un procesamiento posterior del documento.
 
 ## Arquitectura lógica propuesta
 
 ### Bloques principales
 
-1. `Document Ingestion`
-2. `DOCX Text Extraction`
-3. `Editable Source Workspace`
-4. `AI Analysis Orchestrator`
-5. `Prompt Instruction Formatter`
-6. `Result Editor and Export`
+1. `PDF Intake`
+2. `File Validation`
+3. `Upload State Workspace`
+4. `Next Step Handoff`
 
 ## Modelo conceptual de datos
 
@@ -28,141 +25,103 @@ Diseñar un módulo desacoplado que permita:
 - `id`
 - `file_name`
 - `mime_type`
+- `file_size`
 - `uploaded_at`
 - `original_file_ref`
 - `status`
 
-### `ExtractedContent`
+### `UploadValidationResult`
 
-- `document_id`
-- `raw_text`
-- `structured_blocks`
-- `extraction_warnings`
-- `edited_text`
-- `edited_at`
-
-### `AnalysisRequest`
-
-- `document_id`
-- `input_text`
-- `analysis_version`
-- `requested_at`
-- `status`
-
-### `PromptInstructionSet`
-
-- `document_id`
-- `title`
-- `instructions`
-- `categories`
-- `notes`
-- `generated_at`
-- `edited_result`
+- `is_valid`
+- `error_code`
+- `error_message`
+- `validated_at`
 
 ## Contratos funcionales propuestos
 
-### Entrada al analizador IA
+### Entrada del flujo
 
 Debe recibir:
 
-- Texto editado por el usuario.
-- Metadatos mínimos del documento.
-- Parámetros opcionales de análisis en el futuro.
+- Un objeto `File` seleccionado por el usuario.
+- Metadatos derivados del archivo: nombre, MIME type y tamaño.
 
-### Salida del analizador IA
+### Salida de esta historia
 
-Debe devolver una estructura normalizada, idealmente JSON interno, con campos como:
+Debe devolver o conservar:
 
-- `tone_and_register`
-- `audience`
-- `terminology_preferences`
-- `forbidden_terms`
-- `formatting_rules`
-- `localization_rules`
-- `brand_rules`
-- `do_not_translate`
-- `special_instructions`
-- `warnings`
-- `final_prompt_instructions`
-
-La UI puede renderizar una vista amigable a partir de esa estructura.
+- El archivo válido en estado para el siguiente paso.
+- Un estado de flujo normalizado.
+- Un error normalizado cuando la validación falle.
 
 ## Decisiones técnicas iniciales
 
-### Extracción de DOCX
+### Ingesta de PDF
 
 Primera iteración:
 
-- Priorizar extracción de texto, párrafos, listas y tablas simples.
-- No depender de fidelidad visual completa.
-- Mantener una capa adaptadora para poder cambiar la librería de parsing sin afectar el dominio.
+- Restringir la selección desde la UI a archivos `.pdf`.
+- Validar extensión y MIME type cuando el navegador lo informe.
+- Validar archivo no vacío.
+- Validar tamaño máximo definido por producto.
 
-### Integración IA
+### Contrato para el siguiente paso
 
 Primera iteración:
 
-- Encapsular la llamada al proveedor IA detrás de un servicio propio.
-- Separar prompt de sistema, prompt de análisis y formateo del resultado.
-- Diseñar salidas estructuradas para minimizar texto libre difícil de validar.
+- No extraer contenido ni parsear el PDF en esta historia.
+- Dejar el archivo válido accesible para el siguiente paso del flujo.
+- Mantener una estructura de estado que permita agregar procesamiento posterior sin rediseñar la pantalla.
 
 ### Persistencia
 
 Primera iteración:
 
-- Puede comenzar con persistencia local o almacenamiento mínimo según stack elegido.
-- Debe quedar preparado para versionar documentos y resultados más adelante.
+- Puede comenzar con persistencia en estado de pantalla o sesión.
+- No requiere almacenamiento permanente en esta historia.
 
 ## Consideraciones de calidad
 
 ### Observabilidad
 
-- Registrar estados de carga, extracción y análisis.
-- Capturar warnings de extracción y errores del proveedor IA.
+- Registrar estados de carga, validación y procesamiento inicial.
+- Capturar motivos de rechazo para mostrar mensajes claros.
 
 ### Resiliencia
 
-- Preservar el texto editado si falla el análisis.
-- Permitir reintentos de análisis sin volver a cargar el archivo.
+- Preservar el archivo válido en estado mientras el usuario continúe en el flujo.
+- Permitir reintentos de selección sin necesidad de recargar toda la pantalla.
 
 ### Seguridad y privacidad
 
-- No enviar el archivo binario completo al proveedor IA si no es necesario.
-- Enviar solo el texto relevante al análisis.
-- Dejar explícito cuándo el usuario dispara una acción que manda contenido al proveedor externo.
+- No enviar el archivo a servicios externos en esta historia.
+- Limitarse a validaciones locales del archivo seleccionado.
 
 ## Riesgos técnicos
 
-- DOCX con estructura compleja o tablas anidadas.
-- Diferencias entre texto extraído y documento visible al usuario en Word.
-- Respuestas de IA no deterministas o demasiado verbosas.
-- Necesidad futura de soporte multilenguaje y versionado de prompts.
+- Navegadores que no entreguen MIME type confiable.
+- Archivos renombrados con extensión `.pdf` pero tipo incorrecto.
+- Estados inconsistentes si la validación y la UI no comparten la misma fuente de verdad.
 
 ## Estrategia de validación técnica
 
-### Pruebas del parser DOCX
+### Pruebas del validador
 
-- Documento simple con párrafos.
-- Documento con listas.
-- Documento con tablas.
-- Documento con encabezados y secciones.
-- Documento con contenido vacío o corrupto.
-
-### Pruebas del analizador IA
-
-- Guía de estilo corta.
-- Documento largo con ruido operativo.
-- Documento con instrucciones contradictorias.
-- Documento con glosario y exclusiones.
+- PDF válido.
+- Archivo con extensión no soportada.
+- Archivo vacío.
+- Archivo que supera tamaño máximo.
+- Archivo con MIME inválido cuando exista esa señal.
 
 ### Pruebas de flujo
 
-- Carga exitosa.
-- Edición antes de análisis.
-- Reintento tras error.
-- Copia del resultado final.
+- Selección exitosa.
+- Visualización de error.
+- Bloqueo de avance sin archivo válido.
+- Conservación del archivo válido para el siguiente paso.
 
 ## Decisiones abiertas para validación
 
-- Si el resultado final se almacenará por proyecto, por documento o por sesión.
-- Si la salida exportable debe ser texto plano, markdown o ambos desde la primera entrega.
-- Si el usuario podrá definir un template de salida para distintos clientes en una segunda fase.
+- Tamaño máximo exacto permitido para el archivo.
+- Si el archivo válido se conservará solo en memoria o también en session storage.
+- Qué componente o pantalla consumirá el `SourceDocument` en el siguiente paso.

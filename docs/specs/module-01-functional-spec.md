@@ -2,176 +2,121 @@
 
 ## Nombre del módulo
 
-Módulo 01: lector de guías DOCX y generador de instrucciones para IA de traducción.
+Módulo 01: carga inicial de guías PDF para flujo de traducción.
 
 ## Flujo funcional
 
-1. El usuario carga un archivo `.docx`.
-2. El sistema valida formato y disponibilidad del archivo.
-3. El sistema extrae el contenido textual.
-4. El sistema presenta el contenido extraído en un editor.
-5. El usuario revisa, corrige o elimina texto irrelevante.
-6. El usuario solicita el análisis con IA.
-7. El sistema genera un listado estructurado de instrucciones.
-8. El usuario revisa y edita la salida final.
-9. El usuario copia o exporta el resultado.
+1. El usuario selecciona un archivo `.pdf`.
+2. El sistema valida que exista un archivo seleccionado.
+3. El sistema valida extensión `.pdf`, MIME type cuando el navegador lo informa, tamaño máximo permitido y que el archivo no esté vacío.
+4. El sistema muestra estado de carga o procesamiento inicial.
+5. Si el archivo es válido, el sistema lo guarda en el estado de la pantalla y habilita el avance al siguiente paso.
+6. Si el archivo no es válido, el sistema muestra un error claro y bloquea el avance.
 
 ## Componentes funcionales
 
-### 1. Carga de documento
+### 1. Carga de documento PDF
 
 Responsabilidad:
 
-- Permitir seleccionar y cargar un archivo `.docx`.
+- Permitir seleccionar y cargar un archivo `.pdf`.
 
 Reglas:
 
-- Solo se acepta `.docx` en esta etapa.
-- Si el archivo no puede procesarse, debe mostrarse un error claro.
+- El selector debe restringir la selección a archivos `.pdf` desde la UI.
+- El input debe tener un label claro y usable con teclado.
 
-### 2. Extracción de contenido
+### 2. Validación de archivo
 
 Responsabilidad:
 
-- Convertir el `.docx` en texto editable.
+- Validar el archivo seleccionado antes de permitir continuar.
 
 Reglas:
 
-- Debe priorizarse el contenido textual útil.
-- Debe conservarse la separación básica entre títulos, párrafos y listas cuando sea posible.
-- Si existen tablas, su contenido debe extraerse al menos como texto lineal.
+- Debe existir un archivo seleccionado.
+- El archivo debe tener extensión `.pdf`.
+- El sistema debe validar MIME type `application/pdf` cuando el navegador lo entregue.
+- El archivo no debe estar vacío.
+- El archivo no debe superar el tamaño máximo definido por la aplicación.
 
-### 3. Editor de contenido fuente
-
-Responsabilidad:
-
-- Permitir limpieza y curación del texto previo al análisis.
-
-Acciones del usuario:
-
-- Editar texto.
-- Eliminar ruido.
-- Añadir notas manuales.
-- Reemplazar el contenido completo si lo necesita.
-
-### 4. Análisis con IA
+### 3. Estado visual del flujo
 
 Responsabilidad:
 
-- Detectar reglas de traducción presentes en el contenido.
+- Informar al usuario el estado actual de la carga inicial.
 
-Debe identificar, cuando existan:
+Comportamientos esperados:
 
-- Tono y registro.
-- Audiencia objetivo.
-- Terminología preferida o prohibida.
-- Reglas de consistencia.
-- Tratamiento de marcas, nombres propios y siglas.
-- Formato de fechas, números, unidades y puntuación.
-- Restricciones de estilo.
-- Instrucciones de localización.
-- Excepciones o warnings.
+- Mostrar un estado inicial sin archivo cargado.
+- Mostrar un estado de carga o procesamiento inicial cuando corresponda.
+- Mostrar mensajes de error claros y visibles.
+- Mostrar confirmación visual cuando el archivo quede válido.
 
-### 5. Generación de instrucciones estilo prompt
+### 4. Preparación para el siguiente paso
 
 Responsabilidad:
 
-- Transformar el análisis en una lista operativa para otra IA.
+- Dejar el archivo válido disponible para el siguiente paso del flujo.
 
-Formato esperado:
+Reglas:
 
-- Lista clara de instrucciones accionables.
-- Redacción imperativa o directiva.
-- Sin ambigüedad innecesaria.
-- Preferentemente agrupada por categoría.
+- El archivo válido debe guardarse en el estado de la pantalla.
+- El usuario no debe poder continuar si no existe un archivo válido.
+- Esta historia no extrae contenido del PDF ni ejecuta análisis todavía.
 
-### 6. Editor de salida final
-
-Responsabilidad:
-
-- Permitir ajustes finales sobre el prompt generado.
-
-Acciones del usuario:
-
-- Editar.
-- Reordenar.
-- Eliminar instrucciones.
-- Añadir instrucciones manuales.
-
-### 7. Acciones finales
-
-Responsabilidad:
-
-- Facilitar reutilización inmediata.
-
-Acciones:
-
-- Copiar al portapapeles.
-- Exportar a texto o markdown en una iteración posterior.
-
-## Historias de usuario
+## Historia de usuario
 
 ### HU-01
 
-Como traductor, quiero subir una guía `.docx` para no reinterpretarla manualmente cada vez.
+Como traductor, quiero subir un archivo PDF con instrucciones de traducción para iniciar el flujo desde el documento entregado por el cliente.
 
 Criterios de aceptación:
 
-- Puedo cargar un `.docx` válido.
-- Veo el contenido extraído en pantalla.
-
-### HU-02
-
-Como traductor, quiero editar el contenido extraído antes del análisis para eliminar información irrelevante.
-
-Criterios de aceptación:
-
-- Puedo modificar el texto libremente.
-- El análisis usa la versión editada y no solo el archivo original.
-
-### HU-03
-
-Como traductor, quiero que la IA convierta la guía en instrucciones concretas para otra IA traductora.
-
-Criterios de aceptación:
-
-- El resultado se entrega como lista de instrucciones.
-- El resultado refleja tono, terminología y restricciones si están presentes en la fuente.
-
-### HU-04
-
-Como traductor, quiero editar el resultado final para adaptarlo a un proyecto puntual.
-
-Criterios de aceptación:
-
-- Puedo cambiar, agregar o borrar instrucciones antes de copiar/exportar.
+- Puedo cargar un `.pdf` válido.
+- El sistema rechaza formatos no soportados con un mensaje claro.
+- Veo el estado de carga o procesamiento inicial.
+- Veo una confirmación visual del archivo cargado.
+- El archivo válido queda disponible para el siguiente paso del flujo.
+- No puedo continuar si el archivo no es válido.
 
 ## Estados del flujo
 
-- `idle`: sin archivo cargado.
-- `uploading`: archivo en proceso de carga.
-- `extracting`: lectura y extracción del `.docx`.
-- `ready_for_review`: texto extraído disponible para edición.
-- `analyzing`: análisis IA en ejecución.
-- `result_ready`: instrucciones generadas.
-- `error`: error recuperable en cualquier etapa.
+- `idle`: no hay archivo seleccionado.
+- `file_selected`: existe un archivo elegido y se prepara la validación o visualización de sus datos básicos.
+- `processing`: el sistema muestra carga o procesamiento inicial.
+- `ready_to_continue`: el archivo fue validado y quedó listo para el siguiente paso.
+- `error`: ocurrió un error de validación o de procesamiento inicial.
 
 ## Manejo de errores
 
-- Archivo inválido o corrupto.
-- Documento sin texto legible.
-- Error de extracción.
-- Error del servicio de IA.
-- Resultado de IA vacío o insuficiente.
+- Archivo no seleccionado.
+- Formato no soportado.
+- MIME type inválido cuando exista información de tipo.
+- Archivo vacío.
+- Archivo que supera el tamaño máximo permitido.
+- Error inesperado al validar el archivo.
 
-En todos los casos debe preservarse el trabajo manual del usuario siempre que sea posible.
+Mensajes esperados:
+
+- "Solo se permiten archivos PDF".
+- "El archivo está vacío".
+- "El archivo supera el tamaño máximo permitido".
+- "No se pudo validar el archivo seleccionado".
 
 ## Criterios de salida aceptable
 
-La salida final debe:
+La salida de esta historia debe:
 
-- Ser legible como prompt reutilizable.
-- Estar orientada a traducción.
-- Evitar repetir texto original sin síntesis.
-- Hacer explícitas las reglas importantes.
-- Permitir edición humana posterior.
+- Confirmar que el usuario pudo seleccionar un `.pdf`.
+- Validar correctamente el archivo antes de avanzar.
+- Mostrar errores claros cuando corresponda.
+- Mantener el archivo válido en estado para el siguiente paso.
+- Bloquear el avance cuando no haya un archivo válido.
+
+Esta historia no incluye:
+
+- Extracción de texto.
+- Edición de contenido fuente.
+- Análisis con IA.
+- Generación de instrucciones estilo prompt.
