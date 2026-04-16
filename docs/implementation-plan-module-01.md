@@ -2,19 +2,18 @@
 
 ## Objetivo del plan
 
-Describir una secuencia de implementación para el primer módulo sin entrar aún en desarrollo de código.
+Describir una secuencia de implementación para el primer módulo sin mezclar esta historia de carga inicial con historias futuras de procesamiento.
 
 ## Enfoque propuesto
 
-Construir primero el flujo completo de extremo a extremo con la mínima complejidad técnica viable:
+Construir primero el arranque del flujo con la mínima complejidad técnica viable:
 
-1. Cargar `.docx`.
-2. Extraer texto.
-3. Permitir edición.
-4. Analizar con IA.
-5. Entregar instrucciones editables.
+1. Cargar `.pdf`.
+2. Validar el archivo.
+3. Mostrar estados y errores.
+4. Conservar el archivo válido para el siguiente paso.
 
-Esto reduce riesgo temprano y permite validar el valor del producto antes de expandir formatos, integraciones o automatizaciones.
+Esto reduce riesgo temprano y permite validar el comportamiento base antes de avanzar a extracción o análisis del contenido.
 
 ## Fases
 
@@ -22,126 +21,93 @@ Esto reduce riesgo temprano y permite validar el valor del producto antes de exp
 
 Objetivo:
 
-- Validar el flujo principal y las decisiones de experiencia de usuario.
+- Validar el comportamiento de la pantalla y sus estados.
 
 Entregables:
 
-- Wireflow del módulo.
-- Estados de UI.
+- Definición de estados de UI.
 - Criterios de aceptación definitivos.
+- Textos y mensajes de error revisados.
 
-### Fase 2: ingesta y extracción DOCX
+### Fase 2: carga y validación de PDF
 
 Objetivo:
 
-- Habilitar lectura confiable del contenido textual del documento.
+- Habilitar la selección y validación confiable del archivo.
 
 Entregables:
 
 - Componente de carga.
-- Servicio de parsing DOCX.
-- Normalización básica del texto extraído.
-- Manejo de errores de lectura.
+- Validación de extensión, MIME type, tamaño y archivo no vacío.
+- Manejo de errores de validación.
+- Confirmación visual de archivo válido.
 
-### Fase 3: workspace editable del contenido fuente
-
-Objetivo:
-
-- Dar control editorial antes del análisis IA.
-
-Entregables:
-
-- Editor de texto del contenido extraído.
-- Guardado temporal del texto curado.
-- Indicadores de estado del documento.
-
-### Fase 4: análisis IA y estructura de resultado
+### Fase 3: preparación del handoff al siguiente paso
 
 Objetivo:
 
-- Transformar el texto fuente en instrucciones de traducción estructuradas.
+- Dejar el archivo válido disponible para el flujo posterior.
 
 Entregables:
 
-- Servicio de orquestación IA.
-- Prompt interno de análisis.
-- Esquema de salida normalizado.
-- Estrategia de reintentos y errores.
+- Estado de pantalla con archivo válido.
+- Lógica de bloqueo de avance sin archivo válido.
+- Contrato base para consumo por la siguiente etapa.
 
-### Fase 5: salida editable y reutilizable
+### Fase 4: validación y hardening
 
 Objetivo:
 
-- Permitir que el usuario refine y reutilice el resultado.
+- Reducir riesgos de calidad antes de procesar el PDF.
 
 Entregables:
 
-- Vista del listado de instrucciones.
-- Editor del resultado final.
-- Acción de copiado.
-- Exportación opcional si entra en el primer corte.
-
-### Fase 6: validación y hardening
-
-Objetivo:
-
-- Reducir riesgos de calidad antes de extender el producto.
-
-Entregables:
-
-- Casos de prueba con DOCX reales.
-- Revisión de calidad de prompts generados.
-- Ajustes de extracción y formateo.
+- Tests del componente de carga.
+- Revisión de accesibilidad básica.
+- Revisión final de textos para asegurar consistencia total con PDF.
 
 ## Priorización recomendada
 
 ### MVP
 
-- Carga de `.docx`.
-- Extracción de texto.
-- Edición del texto extraído.
-- Análisis IA.
-- Generación y edición del listado final.
-- Copia al portapapeles.
+- Carga de `.pdf`.
+- Validación de archivo.
+- Estados visibles de carga y error.
+- Conservación del archivo válido.
+- Bloqueo de avance cuando no haya archivo válido.
 
 ### Post-MVP inmediato
 
-- Exportación markdown/txt.
-- Historial de documentos procesados.
-- Versionado simple de resultados.
-- Plantillas de salida por cliente.
+- Procesamiento inicial del PDF.
+- Extracción de contenido.
+- Revisión o edición del contenido extraído.
 
 ### Futuro
 
-- Soporte para PDF y otros formatos.
-- Integración con flujos de traducción.
-- Comparación entre múltiples guías.
-- Base reutilizable de prompts por cliente.
+- Análisis con IA.
+- Generación de instrucciones reutilizables.
+- Soporte para otros formatos.
 
 ## Dependencias de decisión
 
 Antes de implementar conviene validar:
 
-- Stack frontend/backend a usar.
-- Proveedor de IA inicial.
-- Forma de persistencia del módulo.
-- Nivel de estructuración esperado en la salida.
-- Criterios para documentos complejos con tablas o layouts densos.
+- Stack frontend a usar.
+- Tamaño máximo permitido para PDFs.
+- Estrategia de persistencia temporal del archivo válido.
+- Forma en que el siguiente paso consumirá ese archivo.
 
 ## Riesgos y mitigaciones
 
-- Riesgo: extracción deficiente de DOCX complejos.
-- Mitigación: acotar claramente el tipo de documentos soportados en v1 y testear con muestras reales.
+- Riesgo: validación insuficiente de archivos incorrectos.
+- Mitigación: combinar validación por extensión, MIME type y tamaño.
 
-- Riesgo: salida IA demasiado genérica.
-- Mitigación: definir esquema estricto de salida y ejemplos de alta calidad para evaluación.
+- Riesgo: mensajes ambiguos al usuario.
+- Mitigación: definir errores explícitos desde la spec.
 
-- Riesgo: pérdida de confianza del usuario por automatización opaca.
-- Mitigación: mantener revisión humana antes y después del análisis.
+- Riesgo: mezclar esta historia con extracción de contenido.
+- Mitigación: separar claramente la carga inicial del procesamiento posterior.
 
 ## Propuesta de siguiente paso
 
-Tras tu validación, el siguiente paso razonable es cerrar dos decisiones de producto antes de codificar:
-
-1. Definir el alcance exacto del MVP.
-2. Elegir stack y estrategia inicial de persistencia e integración IA.
+Tras esta alineación documental, el siguiente paso razonable es diseñar la pantalla y el modelo de estados de UI antes de implementar el componente en React.
