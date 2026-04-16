@@ -19,7 +19,7 @@ describe('App', () => {
 
     render(<App />);
 
-    const input = screen.getByLabelText(/archivo pdf/i);
+    const input = screen.getByLabelText(/selector de archivos/i);
     const file = createFile('brief.pdf');
 
     await user.upload(input, file);
@@ -28,7 +28,7 @@ describe('App', () => {
       expect(screen.getByRole('button', { name: /continuar/i })).toBeEnabled()
     );
 
-    expect(screen.getByText(/archivo válido\. puedes continuar\./i)).toBeInTheDocument();
+    expect(screen.getByText(/archivo cargado correctamente\./i)).toBeInTheDocument();
   });
 
   it('rejects unsupported formats with a clear message', async () => {
@@ -36,7 +36,7 @@ describe('App', () => {
 
     render(<App />);
 
-    const input = screen.getByLabelText(/archivo pdf/i);
+    const input = screen.getByLabelText(/selector de archivos/i);
     const file = createFile('brief.docx', {
       type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     });
@@ -52,7 +52,7 @@ describe('App', () => {
 
     render(<App />);
 
-    const input = screen.getByLabelText(/archivo pdf/i);
+    const input = screen.getByLabelText(/selector de archivos/i);
     const file = createFile('empty.pdf', { size: 0 });
 
     await user.upload(input, file);
@@ -60,18 +60,18 @@ describe('App', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('El archivo está vacío.');
   });
 
-  it('shows the selected file name and size', async () => {
+  it('shows the selected file name without exposing the file size', async () => {
     const user = userEvent.setup();
 
     render(<App />);
 
-    const input = screen.getByLabelText(/archivo pdf/i);
+    const input = screen.getByLabelText(/selector de archivos/i);
     const file = createFile('client-guide.pdf', { size: 2048 });
 
     await user.upload(input, file);
 
     expect(await screen.findByText(/client-guide\.pdf/i)).toBeInTheDocument();
-    expect(screen.getByText(/2\.0 kb/i)).toBeInTheDocument();
+    expect(screen.queryByText(/2\.0 kb/i)).not.toBeInTheDocument();
   });
 
   it('blocks continue when the file exceeds the max size', async () => {
@@ -79,7 +79,7 @@ describe('App', () => {
 
     render(<App />);
 
-    const input = screen.getByLabelText(/archivo pdf/i);
+    const input = screen.getByLabelText(/selector de archivos/i);
     const file = createFile('too-large.pdf', {
       size: MAX_FILE_SIZE_BYTES + 1
     });
@@ -89,6 +89,27 @@ describe('App', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'El archivo supera el tamaño máximo permitido.'
     );
+    expect(screen.getByRole('button', { name: /continuar/i })).toBeDisabled();
+  });
+
+  it('allows removing a loaded file and disables continue again', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    const input = screen.getByLabelText(/selector de archivos/i);
+    const file = createFile('client-guide.pdf');
+
+    await user.upload(input, file);
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /continuar/i })).toBeEnabled()
+    );
+
+    await user.click(screen.getByRole('button', { name: /eliminar archivo/i }));
+
+    expect(screen.queryByText(/client-guide\.pdf/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/carga una o más guías de estilo \(pdf\) para continuar\./i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /continuar/i })).toBeDisabled();
   });
 });

@@ -134,6 +134,20 @@ button:focus-visible {
   margin: 0 0 8px;
 }
 
+.remove-file-button {
+  margin-top: 8px;
+  border: 1px solid rgba(161, 38, 38, 0.24);
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #fff0f0;
+  color: #8c1d1d;
+  cursor: pointer;
+}
+
+.remove-file-button:hover {
+  background: #ffe1e1;
+}
+
 .actions {
   margin-top: 24px;
   display: flex;

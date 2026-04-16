@@ -95,11 +95,22 @@ function App() {
     setFlowState('processing');
   };
 
+  const handleRemoveFile = () => {
+    if (processingTimerRef.current !== null) {
+      window.clearTimeout(processingTimerRef.current);
+      processingTimerRef.current = null;
+    }
+
+    setSelectedFile(null);
+    setErrorMessage('');
+    setFlowState('idle');
+  };
+
   const statusText = {
-    idle: 'Selecciona un PDF para iniciar el flujo.',
+    idle: 'Carga una o más guías de estilo (PDF) para continuar.',
     file_selected: 'Archivo seleccionado.',
     processing: 'Validando archivo y preparando el siguiente paso...',
-    ready_to_continue: 'Archivo válido. Puedes continuar.',
+    ready_to_continue: 'Archivo cargado correctamente.',
     error: errorMessage || 'No se pudo validar el archivo seleccionado.'
   }[flowState];
 
@@ -109,15 +120,14 @@ function App() {
     <main className="app-shell">
       <section className="panel" aria-labelledby="upload-title">
         <p className="eyebrow">Epic 1</p>
-        <h1 id="upload-title">Carga inicial de instrucciones PDF</h1>
+        <h1 id="upload-title">Selección de guías de estilo</h1>
         <p className="lede">
-          Sube el PDF entregado por el cliente. Lo validaremos antes de habilitar el
-          siguiente paso del flujo.
+          Utiliza guías de estilo para personalizar el prompt de traducción.
         </p>
 
         <div className="upload-card">
           <label className="field-label" htmlFor="pdf-upload">
-            Archivo PDF
+            Selector de archivos
           </label>
           <input
             id="pdf-upload"
@@ -147,19 +157,20 @@ function App() {
                 <strong>Nombre:</strong> {selectedFile.name}
               </p>
               <p>
-                <strong>Tamaño:</strong> {formatFileSize(selectedFile.size)}
-              </p>
-              <p>
                 <strong>Estado:</strong>{' '}
                 {canContinue ? 'Listo para continuar' : 'Pendiente de validación'}
               </p>
+              <button
+                type="button"
+                className="remove-file-button"
+                onClick={handleRemoveFile}
+              >
+                Eliminar archivo
+              </button>
             </div>
           ) : null}
 
           <div className="actions">
-            <button type="button" className="secondary-button">
-              Reemplazar archivo
-            </button>
             <button type="button" className="primary-button" disabled={!canContinue}>
               Continuar
             </button>
